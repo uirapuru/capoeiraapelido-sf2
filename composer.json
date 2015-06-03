@@ -8,7 +8,7 @@
     },
     "require": {
         "php": ">=5.3.3",
-        "symfony/symfony": "~2.7@beta",
+        "symfony/symfony": "2.6.*",
         "doctrine/orm": "~2.2,>=2.2.3,<2.5",
         "doctrine/dbal": "<2.5",
         "doctrine/doctrine-bundle": "~1.4",
@@ -17,10 +17,18 @@
         "symfony/monolog-bundle": "~2.4",
         "sensio/distribution-bundle": "~3.0,>=3.0.12",
         "sensio/framework-extra-bundle": "~3.0,>=3.0.2",
-        "incenteev/composer-parameter-handler": "~2.0"
+        "incenteev/composer-parameter-handler": "~2.0",
+        "braincrafted/bootstrap-bundle": "~2.0",
+        "knplabs/knp-menu": "2.0.1",
+        "knplabs/knp-menu-bundle": "2.0.0",
+        "knplabs/knp-paginator-bundle": "2.4.1",
+        "knplabs/knp-time-bundle": "1.3",
+        "doctrine/doctrine-fixtures-bundle": "dev-master"
     },
     "require-dev": {
-        "sensio/generator-bundle": "~2.3"
+        "sensio/generator-bundle": "~2.3",
+        "phpunit/phpunit": "4.7.*@dev",
+        "mockery/mockery": "0.9.4"
     },
     "scripts": {
         "post-root-package-install": [
