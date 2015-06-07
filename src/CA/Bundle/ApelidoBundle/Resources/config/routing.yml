@@ -1,0 +1,3 @@
+ca_apelido_homepage: ~
+#    path:     /hello/{name}
+#    defaults: { _controller: CAApelidoBundle:Default:index }

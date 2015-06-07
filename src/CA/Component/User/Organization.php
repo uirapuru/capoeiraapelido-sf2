@@ -1,14 +1,30 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: uirapuru
- * Date: 07.06.15
- * Time: 19:30
- */
-
 namespace CA\Component\User;
 
-
+/**
+ * Class Organization
+ * @package CA\Component\User
+ */
 class Organization {
 
+    /**
+     * @var string $name
+     */
+    protected $name;
+
+    /**
+     * @param $name
+     */
+    function __construct($name)
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
 }

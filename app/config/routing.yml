@@ -1,3 +1,15 @@
-app:
-    resource: "@AppBundle/Controller/"
-    type:     annotation
+ca_comment:
+    resource: "@CACommentBundle/Resources/config/routing.yml"
+    prefix:   /
+
+ca_user:
+    resource: "@CAUserBundle/Resources/config/routing.yml"
+    prefix:   /
+
+ca_description:
+    resource: "@CADescriptionBundle/Resources/config/routing.yml"
+    prefix:   /
+
+ca_apelido:
+    resource: "@CAApelidoBundle/Resources/config/routing.yml"
+    prefix:   /

@@ -2,10 +2,10 @@
 namespace CA\Component\User;
 
 /**
- * Class UserCity
+ * Class City
  * @package CA\Component\User
  */
-class UserCity {
+class City {
 
     /**
      * @var string $name

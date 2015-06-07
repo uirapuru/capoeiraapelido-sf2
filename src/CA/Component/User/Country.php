@@ -1,14 +1,21 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: uirapuru
- * Date: 07.06.15
- * Time: 19:24
- */
-
 namespace CA\Component\User;
 
-
+/**
+ * Class Country
+ * @package CA\Component\User
+ */
 class Country {
+    /**
+     * @var string
+     */
+    protected $name;
 
+    /**
+     * @param string $name
+     */
+    function __construct($name)
+    {
+        $this->name = $name;
+    }
 }
