@@ -1,5 +1,7 @@
 default:
-    autoload: tests/contexts
+    autoload: app/Tests/Context
     suites:
         default:
-            context: ApelidoContext
+            paths:
+              - %paths.base%/app/Resources/features
+            context: ApelidoManagerContext

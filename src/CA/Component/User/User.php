@@ -29,17 +29,23 @@ class User {
     protected $organization;
 
     /**
+     * @var string
+     */
+    protected $token;
+
+    /**
      * @param $name
      * @param Apelido $apelido
      * @param City $city
      * @param $organization
      */
-    function __construct($name, Apelido $apelido, City $city, Organization $organization)
+    function __construct($name, Apelido $apelido, City $city, Organization $organization, $token)
     {
         $this->name = $name;
         $this->apelido = $apelido;
         $this->city = $city;
         $this->organization = $organization;
+        $this->token = $token;
     }
 
     /**
@@ -72,5 +78,13 @@ class User {
     public function getOrganization()
     {
         return $this->organization;
+    }
+
+    /**
+     * @return string
+     */
+    public function getToken()
+    {
+        return $this->token;
     }
 }

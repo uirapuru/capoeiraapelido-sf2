@@ -32,7 +32,9 @@
     "require-dev": {
         "sensio/generator-bundle": "~2.3",
         "phpunit/phpunit": "4.7.*@dev",
-        "mockery/mockery": "0.9.4"
+        "mockery/mockery": "0.9.4",
+        "behat/behat": "3.0.0beta5",
+        "phpspec/phpspec": "dev-master"
     },
     "scripts": {
         "post-root-package-install": [
