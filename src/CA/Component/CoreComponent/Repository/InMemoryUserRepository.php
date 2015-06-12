@@ -3,9 +3,9 @@ namespace CA\Component\CoreComponent\Repository;
 
 use CA\Component\Apelido\Apelido;
 use CA\Component\User\User;
-use CA\Component\User\UserRepositoryInterface;
+use CA\Component\User\UserRepositoryInterface as BaseRepositoryInterface;
 
-class InMemoryUserRepository implements UserRepositoryInterface
+class InMemoryUserRepository implements BaseRepositoryInterface
 {
     /**
      * @var User[] $users
@@ -21,9 +21,17 @@ class InMemoryUserRepository implements UserRepositoryInterface
         $this->users[$user->getName()] = $user;
     }
 
+    /**
+     * @param Apelido $apelido
+     * @return \Generator
+     */
     public function getUsersForApelido(Apelido $apelido)
     {
-        // TODO: Implement getUsersForApelido() method.
+        foreach($this->users as $user) {
+            if($user->getApelido()->getName() == $apelido->getName()) {
+                yield $user;
+            }
+        }
     }
 
     /**

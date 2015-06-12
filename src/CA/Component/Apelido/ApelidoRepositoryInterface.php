@@ -18,7 +18,7 @@ interface ApelidoRepositoryInterface {
      * @param User $user
      * @return Apelido
      */
-    public function getUsersApelido(User $user);
+    public function getApelidoForUser(User $user);
 
     /**
      * @return Apelido[]

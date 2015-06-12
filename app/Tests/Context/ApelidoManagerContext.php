@@ -8,11 +8,19 @@ use CA\Component\CoreComponent\CreateApelido;
 use CA\Component\CoreComponent\CreateUser;
 use CA\Component\CoreComponent\Repository\InMemoryApelidoRepository;
 use CA\Component\CoreComponent\Repository\InMemoryUserRepository;
+use CA\Component\CoreComponent\Repository\InMemoryCityRepository;
+use CA\Component\CoreComponent\Repository\InMemoryCountryRepository;
+use CA\Component\CoreComponent\Repository\InMemoryOrganizationRepository;
 use CA\Component\Apelido\Apelido;
+use CA\Component\Apelido\ApelidoRepositoryInterface;
 use CA\Component\User\User;
 use CA\Component\User\Organization;
 use CA\Component\User\City;
 use CA\Component\User\Country;
+use CA\Component\User\UserRepositoryInterface;
+use CA\Component\User\OrganizationRepositoryInterface;
+use CA\Component\User\CityRepositoryInterface;
+use CA\Component\User\CountryRepositoryInterface;
 
 /**
  * Class ApelidoManagerContext
@@ -20,19 +28,34 @@ use CA\Component\User\Country;
 class ApelidoManagerContext implements ContextInterface {
 
     /**
-     * @var \CA\Component\User\User
+     * @var User
      */
     private $loggedInUser;
 
     /**
-     * @var \CA\Component\Apelido\ApelidoRepositoryInterface
+     * @var ApelidoRepositoryInterface
      */
     private $apelidoRepository;
 
     /**
-     * @var \CA\Component\User\UserRepositoryInterface
+     * @var UserRepositoryInterface
      */
     private $userRepository;
+
+    /**
+     * @var CountryRepositoryInterface
+     */
+    private $countryRepository;
+
+    /**
+     * @var CityRepositoryInterface
+     */
+    private $cityRepository;
+
+    /**
+     * @var OrganizationRepositoryInterface
+     */
+    private $organizationRepository;
 
     /**
      * @var string[]
@@ -62,26 +85,44 @@ class ApelidoManagerContext implements ContextInterface {
      */
     public function prepare()
     {
-        $this->notifications = [];
-
         $dispatcher = new EventDispatcher();
 
-        $apelidoRepository = new InMemoryApelidoRepository();
-        $userRepository = new InMemoryUserRepository();
+        $this->apelidoRepository = new InMemoryApelidoRepository();
+        $this->userRepository = new InMemoryUserRepository();
+        $this->countryRepository = new InMemoryCountryRepository();
+        $this->cityRepository = new InMemoryCityRepository();
+        $this->organizationRepository = new InMemoryOrganizationRepository();
 
-        $this->createApelido = new CreateApelido($apelidoRepository, $dispatcher);
-        $this->createUser = new CreateUser($userRepository, $dispatcher);
-
-        $this->apelidoRepository = $apelidoRepository;
-        $this->userRepository = $userRepository;
+        $this->createApelido = new CreateApelido($this->apelidoRepository, $dispatcher);
+        $this->createUser = new CreateUser(
+            $this->userRepository,
+            $this->countryRepository,
+            $this->cityRepository,
+            $this->organizationRepository,
+            $dispatcher
+        );
 
         $machadoApelido = new Apelido("Machado");
         $this->createApelido->createApelido($machadoApelido);
+
+        $germanyCountry = new Country("Germany");
+        $berlinCity = new City("Berlin", $germanyCountry);
+        $abadaOrganization = new Organization("Abada");
+
+        $this->cityRepository->save($berlinCity);
+        $this->countryRepository->save($germanyCountry);
+        $this->organizationRepository->save($abadaOrganization);
 
         $dispatcher->addListener(CreateApelido::SUCCESS, [$this, 'recordNotification']);
         $dispatcher->addListener(CreateApelido::FAILURE, [$this, 'recordNotification']);
         $dispatcher->addListener(CreateUser::SUCCESS, [$this, 'recordNotification']);
         $dispatcher->addListener(CreateUser::FAILURE, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::SUCCESS_CITY, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::FAILURE_CITY, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::SUCCESS_COUNTRY, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::FAILURE_COUNTRY, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::SUCCESS_ORGANIZATION, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::FAILURE_ORGANIZATION, [$this, 'recordNotification']);
 
     }
 
@@ -96,9 +137,9 @@ class ApelidoManagerContext implements ContextInterface {
     }
 
     /**
-     * @When /^I create new apelido "([^"]*)" with email "([^"]*)"$/
+     * @When /^I create new apelido "([^"]*)" with email "([^"]*)", group "([^"]*)", city "([^"]*)", country "([^"]*)"$/
      */
-    public function iCreateNewApelidoWithEmail($apelido, $email)
+    public function iCreateNewApelidoWithEmail($apelido, $email, $organization, $city, $country)
     {
         $apelido = new Apelido($apelido);
 
@@ -107,8 +148,8 @@ class ApelidoManagerContext implements ContextInterface {
         $user = new User(
             $email,
             $apelido,
-            new City("city", new Country("country")),
-            new Organization("Camangula"),
+            new City($city, new Country($country)),
+            new Organization($organization),
             uniqid()
         );
 
@@ -144,7 +185,7 @@ class ApelidoManagerContext implements ContextInterface {
             }
         }
 
-        throw new RuntimeException("Apelido not saved");
+        throw new RuntimeException("Account not saved");
     }
 
     /**
@@ -226,6 +267,153 @@ class ApelidoManagerContext implements ContextInterface {
     public function iShouldNotBeNotifiedAboutSuccessfulApelidoCreation()
     {
         if (in_array(CreateApelido::SUCCESS, $this->notifications)) {
+            throw new RuntimeException('Notification received!');
+        };
+    }
+
+    /**
+     * @Given /^group "([^"]*)" does not exist$/
+     */
+    public function groupDoesNotExist($name)
+    {
+        foreach($this->organizationRepository->findAll() as $group)
+        {
+            if ($group->getName() == $name) {
+                throw new \RuntimeException("Group already exists!");
+            }
+        }
+    }
+
+    /**
+     * @Given /^city "([^"]*)" does not exist$/
+     */
+    public function cityDoesNotExist($name)
+    {
+        foreach($this->cityRepository->findAll() as $city)
+        {
+            if ($city->getName() == $name) {
+                throw new \RuntimeException("City already exists!");
+            }
+        }
+    }
+
+    /**
+     * @Given /^country "([^"]*)" does not exist$/
+     */
+    public function countryDoesNotExist($name)
+    {
+        foreach($this->countryRepository->findAll() as $country)
+        {
+            if ($country->getName() == $name) {
+                throw new \RuntimeException("Country already exists!");
+            }
+        }
+    }
+
+    /**
+     * @Given /^group "([^"]*)" should be saved$/
+     * @Given /^group "([^"]*)" does exist$/
+     */
+    public function groupShouldBeSaved($name)
+    {
+        foreach($this->organizationRepository->findAll() as $group)
+        {
+            if ($group->getName() == $name) {
+                return;
+            }
+        }
+
+        throw new RuntimeException("Group not saved");
+    }
+
+    /**
+     * @Given /^city "([^"]*)" should be saved$/
+     * @Given /^city "([^"]*)" does exist$/
+     */
+    public function cityShouldBeSaved($name)
+    {
+        foreach($this->cityRepository->findAll() as $city)
+        {
+            if ($city->getName() == $name) {
+                return;
+            }
+        }
+
+        throw new RuntimeException("City not saved");
+    }
+
+    /**
+     * @Given /^country "([^"]*)" should be saved$/
+     * @Given /^country "([^"]*)" does exist$/
+     */
+    public function countryShouldBeSaved($name)
+    {
+        foreach($this->countryRepository->findAll() as $country)
+        {
+            if ($country->getName() == $name) {
+                return;
+            }
+        }
+
+        throw new RuntimeException("Country not saved");
+    }
+
+    /**
+     * @Given /^I should be notified about successful group creation$/
+     */
+    public function iShouldBeNotifiedAboutSuccessfulGroupCreation()
+    {
+        if (!in_array(CreateUser::SUCCESS_ORGANIZATION, $this->notifications)) {
+            throw new RuntimeException('Notification not received!');
+        };
+    }
+
+    /**
+     * @Given /^I should be notified about successful city creation$/
+     */
+    public function iShouldBeNotifiedAboutSuccessfulCityCreation()
+    {
+        if (!in_array(CreateUser::SUCCESS_CITY, $this->notifications)) {
+            throw new RuntimeException('Notification not received!');
+        };
+    }
+
+    /**
+     * @Given /^I should be notified about successful country creation$/
+     */
+    public function iShouldBeNotifiedAboutSuccessfulCountryCreation()
+    {
+        if (!in_array(CreateUser::SUCCESS_COUNTRY, $this->notifications)) {
+            throw new RuntimeException('Notification not received!');
+        };
+    }
+
+    /**
+     * @Given /^I should not be notified about group creation$/
+     */
+    public function iShouldNotBeNotifiedAboutGroupCreation()
+    {
+        if (in_array(CreateUser::SUCCESS_ORGANIZATION, $this->notifications)) {
+            throw new RuntimeException('Notification received!');
+        };
+    }
+
+    /**
+     * @Given /^I should not be notified about city creation$/
+     */
+    public function iShouldNotBeNotifiedAboutCityCreation()
+    {
+        if (in_array(CreateUser::SUCCESS_CITY, $this->notifications)) {
+            throw new RuntimeException('Notification received!');
+        };
+    }
+
+    /**
+     * @Given /^I should not be notified about country creation$/
+     */
+    public function iShouldNotBeNotifiedAboutCountryCreation()
+    {
+        if (in_array(CreateUser::SUCCESS_COUNTRY, $this->notifications)) {
             throw new RuntimeException('Notification received!');
         };
     }

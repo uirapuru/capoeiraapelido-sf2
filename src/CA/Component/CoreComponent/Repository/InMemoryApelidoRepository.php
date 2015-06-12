@@ -2,10 +2,10 @@
 namespace CA\Component\CoreComponent\Repository;
 
 use CA\Component\Apelido\Apelido;
-use CA\Component\Apelido\ApelidoRepositoryInterface;
+use CA\Component\Apelido\ApelidoRepositoryInterface as BaseRepositoryInterface;
 use CA\Component\User\User;
 
-class InMemoryApelidoRepository implements ApelidoRepositoryInterface
+class InMemoryApelidoRepository implements BaseRepositoryInterface
 {
     /**
      * @var Apelido[] $apelidos
@@ -25,7 +25,7 @@ class InMemoryApelidoRepository implements ApelidoRepositoryInterface
      * @param User $user
      * @return mixed
      */
-    public function getUsersApelido(User $user)
+    public function getApelidoForUser(User $user)
     {
         // TODO: Implement getUsersApelido() method.
     }
