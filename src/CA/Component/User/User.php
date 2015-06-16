@@ -19,12 +19,17 @@ class User {
     protected $apelido;
 
     /**
-     * @var City $city
+     * @var string $city
      */
     protected $city;
 
     /**
-     * @var Organization
+     * @var string $country
+     */
+    protected $country;
+
+    /**
+     * @var string
      */
     protected $organization;
 
@@ -36,14 +41,17 @@ class User {
     /**
      * @param $name
      * @param Apelido $apelido
-     * @param City $city
+     * @param $city
+     * @param $country
      * @param $organization
+     * @param $token
      */
-    function __construct($name, Apelido $apelido, City $city, Organization $organization, $token)
+    function __construct($name, Apelido $apelido, $city, $country, $organization, $token)
     {
         $this->name = $name;
         $this->apelido = $apelido;
         $this->city = $city;
+        $this->country = $country;
         $this->organization = $organization;
         $this->token = $token;
     }
@@ -65,7 +73,7 @@ class User {
     }
 
     /**
-     * @return City
+     * @return string
      */
     public function getCity()
     {
@@ -73,7 +81,15 @@ class User {
     }
 
     /**
-     * @return Organization
+     * @return string
+     */
+    public function getCountry()
+    {
+        return $this->country;
+    }
+
+    /**
+     * @return string
      */
     public function getOrganization()
     {

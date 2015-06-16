@@ -1,7 +1,6 @@
 <?php
 
 use Behat\Behat\Context\ContextInterface;
-use Behat\Behat\Exception\PendingException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use CA\Component\CoreComponent\CreateApelido;
@@ -96,18 +95,12 @@ class ApelidoManagerContext implements ContextInterface {
         $this->createApelido = new CreateApelido($this->apelidoRepository, $dispatcher);
         $this->createUser = new CreateUser(
             $this->userRepository,
-            $this->countryRepository,
-            $this->cityRepository,
-            $this->organizationRepository,
             $dispatcher
         );
 
         $machadoApelido = new Apelido("Machado");
         $this->createApelido->createApelido($machadoApelido);
 
-        $germanyCountry = new Country("Germany");
-        $berlinCity = new City("Berlin", $germanyCountry);
-        $abadaOrganization = new Organization("Abada");
 
         $this->cityRepository->save($berlinCity);
         $this->countryRepository->save($germanyCountry);
@@ -137,6 +130,7 @@ class ApelidoManagerContext implements ContextInterface {
     }
 
     /**
+     * @When /^I create new apelido "([^"]*)"$/
      * @When /^I create new apelido "([^"]*)" with email "([^"]*)", group "([^"]*)", city "([^"]*)", country "([^"]*)"$/
      */
     public function iCreateNewApelidoWithEmail($apelido, $email, $organization, $city, $country)
@@ -220,7 +214,6 @@ class ApelidoManagerContext implements ContextInterface {
         if($user->getName() !== $this->loggedInUser->getName()) {
             throw new \RuntimeException("Logged in user with token does not exists in repository");
         }
-
     }
 
     /**
@@ -416,5 +409,29 @@ class ApelidoManagerContext implements ContextInterface {
         if (in_array(CreateUser::SUCCESS_COUNTRY, $this->notifications)) {
             throw new RuntimeException('Notification received!');
         };
+    }
+
+    /**
+     * @Given /^I add to apelido "([^"]*)" user with email "([^"]*)", group "([^"]*)", city "([^"]*)", country "([^"]*)"$/
+     */
+    public function iAddToApelidoUserWithEmailGroupCityCountry($arg1, $arg2, $arg3, $arg4, $arg5)
+    {
+        throw new PendingException();
+    }
+
+    /**
+     * @Given /^I add to apelido "([^"]*)" description "([^"]*)"$/
+     */
+    public function iAddToApelidoDescription($arg1, $arg2)
+    {
+        throw new PendingException();
+    }
+
+    /**
+     * @Given /^I add to apelido "([^"]*)" description "([^"]*)" as "([^"]*)"$/
+     */
+    public function iAddToApelidoDescriptionAs($arg1, $arg2, $arg3)
+    {
+        throw new PendingException();
     }
 }

@@ -10,17 +10,13 @@ Feature: Not logged in user can add a new occurence of apelido
     And group "Camangula" does not exist
     And city "Gdynia" does not exist
     And country "Poland" does not exist
-    When I create new apelido "Uirapuru" with email "uirapuru@tlen.pl", group "Camangula", city "Gdynia", country "Poland"
+    When I create new apelido "Uirapuru"
+    And I add to apelido "Uirapuru" user with email "uirapuru@tlen.pl", group "Camangula", city "Gdynia", country "Poland"
+    And I add to apelido "Uirapuru" description "Small amazonian bird" as "uirapuru@tlen.pl"
     Then apelido "Uirapuru" should be saved
     And my account "uirapuru@tlen.pl" created
-    And group "Camangula" should be saved
-    And city "Gdynia" should be saved
-    And country "Poland" should be saved
     And I should be notified about successful apelido creation
     And I should be notified about successful account creation
-    And I should be notified about successful group creation
-    And I should be notified about successful city creation
-    And I should be notified about successful country creation
     And I am logged in as "uirapuru@tlen.pl"
     And I should get a valid token for my account
 
