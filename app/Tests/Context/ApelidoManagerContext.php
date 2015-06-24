@@ -85,6 +85,10 @@ class ApelidoManagerContext implements ContextInterface {
     public function prepare()
     {
         $dispatcher = new EventDispatcher();
+        $dispatcher->addListener(CreateApelido::SUCCESS, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateApelido::FAILURE, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::SUCCESS, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateUser::FAILURE, [$this, 'recordNotification']);
 
         $this->apelidoRepository = new InMemoryApelidoRepository();
         $this->userRepository = new InMemoryUserRepository();
@@ -96,12 +100,7 @@ class ApelidoManagerContext implements ContextInterface {
         );
 
         $machadoApelido = new Apelido("Machado");
-        $this->createApelido->createApelido($machadoApelido);
-
-        $dispatcher->addListener(CreateApelido::SUCCESS, [$this, 'recordNotification']);
-        $dispatcher->addListener(CreateApelido::FAILURE, [$this, 'recordNotification']);
-        $dispatcher->addListener(CreateUser::SUCCESS, [$this, 'recordNotification']);
-        $dispatcher->addListener(CreateUser::FAILURE, [$this, 'recordNotification']);
+        $this->apelidoRepository->save($machadoApelido);
     }
 
     /**
@@ -141,7 +140,7 @@ class ApelidoManagerContext implements ContextInterface {
     }
 
     /**
-     * @Then /^apelido "([^"]*)" should be saved$/
+     * @Then /^apelido "([^"]*)" should exist$/
      */
     public function apelidoShouldBeSaved($name)
     {
@@ -252,4 +251,22 @@ class ApelidoManagerContext implements ContextInterface {
         };
     }
 
+    /**
+     * @Given /^user account "([^"]*)" has been created$/
+     */
+    public function userAccountDoesExist($name)
+    {
+        $user = new User($name, new Apelido('some'), '','','','');
+        $this->userRepository->save($user);
+    }
+
+    /**
+     * @Given /^I should be notified about error on account creation$/
+     */
+    public function iShouldBeNotifiedAboutErrorOnAccountCreation()
+    {
+        if (!in_array(CreateUser::FAILURE, $this->notifications)) {
+            throw new RuntimeException('Notification not received!');
+        };
+    }
 }
