@@ -55,5 +55,16 @@ class InMemoryUserRepository implements BaseRepositoryInterface
         }
     }
 
-
+    /**
+     * @param $email
+     * @return User|null
+     */
+    public function findOneByEmail($email)
+    {
+        foreach($this->users as $user) {
+            if($user->getName() === $email) {
+                return $user;
+            }
+        }
+    }
 }

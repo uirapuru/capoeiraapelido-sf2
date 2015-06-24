@@ -35,6 +35,12 @@ class CreateUser
         $this->dispatcher = $dispatcher;
     }
 
+    function __invoke(User $user)
+    {
+        $this->createUser($user);
+    }
+
+
     /**
      * @param User $user
      */
@@ -49,7 +55,12 @@ class CreateUser
             return;
         }
 
-        $this->userRepository->save($user);
-        $this->dispatcher->dispatch(self::SUCCESS, new Event(['user' => $user]));
+        if(!$this->userRepository->findOneByEmail($user->getName()))
+        {
+            $this->userRepository->save($user);
+            $this->dispatcher->dispatch(self::SUCCESS, new Event(['user' => $user]));
+        } else {
+            $this->dispatcher->dispatch(self::FAILURE, new Event(['user' => $user, 'reason' => 'User already exists']));
+        }
     }
 }

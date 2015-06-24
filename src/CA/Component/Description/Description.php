@@ -25,9 +25,9 @@ class Description {
     protected $image;
 
     /**
-     * @var User $autor
+     * @var User $author
      */
-    protected $autor;
+    protected $author;
 
     /**
      * @var Thumb[]
@@ -40,24 +40,17 @@ class Description {
     protected $thumbsDown;
 
     /**
-     * @var \DateTime
-     */
-    protected $createdAt;
-
-    /**
      * @param Apelido $apelido
      * @param $message
      * @param Image $image
-     * @param User $autor
-     * @param \DateTime $createdAt
+     * @param User $author
      */
-    function __construct(Apelido $apelido, $message, Image $image, User $autor, \DateTime $createdAt)
+    function __construct(Apelido $apelido, $message, Image $image, User $author)
     {
         $this->apelido = $apelido;
         $this->message = $message;
         $this->image = $image;
-        $this->autor = $autor;
-        $this->createdAt = $createdAt;
+        $this->author = $author;
     }
 
     /**
@@ -87,16 +80,8 @@ class Description {
     /**
      * @return User
      */
-    public function getAutor()
+    public function getAuthor()
     {
-        return $this->autor;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
+        return $this->author;
     }
 }

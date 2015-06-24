@@ -1,20 +1,14 @@
-Feature: Not logged in user can add a new occurence of apelido
-  In order to create new apelido
-  As a unregistered user
-  I need to be able to create new or add myself to existing apelido
-  And get a valid token to confirm operation or signup in system for further changes
-
-  Scenario: Successfully adding new apelido
-    Given I am not logged in
-    And apelido "Uirapuru" does not exists
-    When I create new apelido "Uirapuru"
-    Then apelido "Uirapuru" should exist
-    And I should be notified about successful apelido creation
-
-  Scenario: Creating user for existing apelido
-    Given I am not logged in
+Feature: Existing user can add his description to apelido
+  In order to put his own apelido description
+  As a registered user
+  I need to be able to create new description with image
+  
+  Scenario: Successfully adding new description with image
+    Given account "loggedin@tlen.pl" does exist
+    And I am logged in as "loggedin@tlen.pl"
     And apelido "Machado" does exist
-    When I create new apelido "Machado"
-    Then apelido "Machado" should exist
-    And I should not be notified about successful apelido creation
-
+    When I create for apelido "Machado" new description  "A little bird from Amazonian forest" with "abc.jpg" image as user "loggedin@tlen.pl"
+    Then I should be notified about successful description creation
+    When I create for apelido "Machado" new description  "A..." with "abc.jpg" image as user "loggedin@tlen.pl"
+    Then I should be notified about failure on description creation
+    And apelido "Machado" should have 1 description

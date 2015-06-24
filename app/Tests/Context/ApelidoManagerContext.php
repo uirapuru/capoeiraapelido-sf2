@@ -1,33 +1,31 @@
 <?php
 
 use Behat\Behat\Context\ContextInterface;
+use CA\Component\Description\DescriptionRepositoryInterface;
+use CA\Component\Description\Image;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use CA\Component\CoreComponent\CreateApelido;
 use CA\Component\CoreComponent\CreateUser;
+use CA\Component\CoreComponent\CreateDescription;
 use CA\Component\CoreComponent\Repository\InMemoryApelidoRepository;
 use CA\Component\CoreComponent\Repository\InMemoryUserRepository;
-use CA\Component\CoreComponent\Repository\InMemoryCityRepository;
-use CA\Component\CoreComponent\Repository\InMemoryCountryRepository;
-use CA\Component\CoreComponent\Repository\InMemoryOrganizationRepository;
+use CA\Component\CoreComponent\Repository\InMemoryDescriptionRepository;
 use CA\Component\Apelido\Apelido;
 use CA\Component\Apelido\ApelidoRepositoryInterface;
 use CA\Component\User\User;
-use CA\Component\User\Organization;
-use CA\Component\User\City;
-use CA\Component\User\Country;
 use CA\Component\User\UserRepositoryInterface;
-use CA\Component\User\OrganizationRepositoryInterface;
-use CA\Component\User\CityRepositoryInterface;
-use CA\Component\User\CountryRepositoryInterface;
+use CA\Component\Description\Description;
 
 /**
  * Class ApelidoManagerContext
  */
 class ApelidoManagerContext implements ContextInterface {
 
+    use NotifyTrait;
+
     /**
-     * @var User
+     * @var User[]
      */
     private $loggedInUser;
 
@@ -42,24 +40,9 @@ class ApelidoManagerContext implements ContextInterface {
     private $userRepository;
 
     /**
-     * @var CountryRepositoryInterface
+     * @var DescriptionRepositoryInterface|InMemoryDescriptionRepository
      */
-    private $countryRepository;
-
-    /**
-     * @var CityRepositoryInterface
-     */
-    private $cityRepository;
-
-    /**
-     * @var OrganizationRepositoryInterface
-     */
-    private $organizationRepository;
-
-    /**
-     * @var string[]
-     */
-    private $notifications = [];
+    private $descriptionRepository;
 
     /**
      * @var CreateApelido $createApelido
@@ -72,12 +55,9 @@ class ApelidoManagerContext implements ContextInterface {
     private $createUser;
 
     /**
-     * @param Event $event
+     * @var CreateDescription $createDescription
      */
-    public function recordNotification(Event $event)
-    {
-        $this->notifications[] = $event->getName();
-    }
+    private $createDescription;
 
     /**
      * @BeforeScenario
@@ -89,28 +69,43 @@ class ApelidoManagerContext implements ContextInterface {
         $dispatcher->addListener(CreateApelido::FAILURE, [$this, 'recordNotification']);
         $dispatcher->addListener(CreateUser::SUCCESS, [$this, 'recordNotification']);
         $dispatcher->addListener(CreateUser::FAILURE, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateDescription::SUCCESS, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateDescription::FAILURE, [$this, 'recordNotification']);
 
         $this->apelidoRepository = new InMemoryApelidoRepository();
         $this->userRepository = new InMemoryUserRepository();
+        $this->descriptionRepository = new InMemoryDescriptionRepository();
 
         $this->createApelido = new CreateApelido($this->apelidoRepository, $dispatcher);
-        $this->createUser = new CreateUser(
-            $this->userRepository,
-            $dispatcher
-        );
+        $this->createUser = new CreateUser($this->userRepository, $dispatcher);
+        $this->createDescription = new CreateDescription($this->descriptionRepository, $dispatcher);
 
         $machadoApelido = new Apelido("Machado");
         $this->apelidoRepository->save($machadoApelido);
+
+        $loggedIn = new User('loggedin@tlen.pl', new Apelido('Uirapuru'), '', '', '', uniqid());
+        $this->createUser->createUser($loggedIn);
+
+        $this->loggedInUser[] = $loggedIn;
     }
 
     /**
      * @Given /^I am not logged in$/
+     * @Given /^I am not logged in as "([^"]*)"$/
      */
-    public function iAmNotLoggedIn()
+    public function iAmNotLoggedIn($who = null)
     {
-        if($this->loggedInUser != null) {
-            throw new RuntimeException("User is not null!");
+        if($who == null) {
+            return;
         }
+
+        foreach($this->loggedInUser as $user) {
+            if($user->getName() == $who) {
+                return;
+            }
+        }
+
+        throw new RuntimeException("User is not null!");
     }
 
     /**
@@ -136,7 +131,7 @@ class ApelidoManagerContext implements ContextInterface {
 
         $user = new User($email, $apelido, $city, $country, $organization, uniqid());
         $this->createUser->createUser($user);
-        $this->loggedInUser = $user;
+        $this->loggedInUser[] = $user;
     }
 
     /**
@@ -156,6 +151,7 @@ class ApelidoManagerContext implements ContextInterface {
 
     /**
      * @Given /^my account "([^"]*)" created$/
+     * @Given /^account "([^"]*)" does exist$/
      */
     public function myAccountCreated($email)
     {
@@ -169,39 +165,6 @@ class ApelidoManagerContext implements ContextInterface {
         throw new RuntimeException("Account not saved");
     }
 
-    /**
-     * @Given /^I should be notified about successful apelido creation$/
-     */
-    public function iShouldBeNotifiedAboutSuccess()
-    {
-        if (!in_array(CreateApelido::SUCCESS, $this->notifications)) {
-            throw new RuntimeException('No notification received');
-        };
-    }
-
-    /**
-     * @Given /^I should be notified about successful account creation$/
-     */
-    public function iShouldBeNotifiedAboutSuccessfulAccountCreation()
-    {
-        if (!in_array(CreateUser::SUCCESS, $this->notifications)) {
-            throw new RuntimeException('No notification received');
-        };
-    }
-
-    /**
-     * @Given /^I should get a valid token for my account$/
-     */
-    public function iShouldGetAValidTokenForMyAccount()
-    {
-        $token = $this->loggedInUser->getToken();
-
-        $user = $this->userRepository->getUserByToken($token);
-
-        if($user->getName() !== $this->loggedInUser->getName()) {
-            throw new \RuntimeException("Logged in user with token does not exists in repository");
-        }
-    }
 
     /**
      * @Given /^apelido "([^"]*)" does not exists$/
@@ -221,9 +184,12 @@ class ApelidoManagerContext implements ContextInterface {
      */
     public function iAmLoggedInAs($arg1)
     {
-        if(!$this->loggedInUser || $this->loggedInUser->getName() !== $arg1) {
-            throw new \RuntimeException("User is not logged in");
+        foreach($this->loggedInUser as $user) {
+            if($user->getName() == $arg1) {
+                return;
+            }
         }
+        throw new \RuntimeException("User is not logged in");
     }
 
     /**
@@ -242,16 +208,6 @@ class ApelidoManagerContext implements ContextInterface {
     }
 
     /**
-     * @Given /^I should not be notified about successful apelido creation$/
-     */
-    public function iShouldNotBeNotifiedAboutSuccessfulApelidoCreation()
-    {
-        if (in_array(CreateApelido::SUCCESS, $this->notifications)) {
-            throw new RuntimeException('Notification received!');
-        };
-    }
-
-    /**
      * @Given /^user account "([^"]*)" has been created$/
      */
     public function userAccountDoesExist($name)
@@ -261,12 +217,27 @@ class ApelidoManagerContext implements ContextInterface {
     }
 
     /**
-     * @Given /^I should be notified about error on account creation$/
+     * @When /^I create for apelido "([^"]*)" new description  "([^"]*)" with "([^"]*)" image as user "([^"]*)"$/
      */
-    public function iShouldBeNotifiedAboutErrorOnAccountCreation()
+    public function iCreateForApelidoNewDescriptionWithImage($apelidoName, $descriptionText, $imageFile, $userName)
     {
-        if (!in_array(CreateUser::FAILURE, $this->notifications)) {
-            throw new RuntimeException('Notification not received!');
-        };
+        $apelido = $this->apelidoRepository->getApelidoByName($apelidoName);
+        $user = $this->userRepository->findOneByEmail($userName);
+
+        $description = new Description($apelido, $descriptionText, new Image($imageFile), $user);
+        $this->createDescription->createDescription($description);
     }
+
+    /**
+     * @Given /^apelido "([^"]*)" should have (\d+) description$/
+     */
+    public function apelidoShouldHaveDescription($apelidoName, $count)
+    {
+        $apelido = $this->apelidoRepository->getApelidoByName($apelidoName);
+
+        if(count($this->descriptionRepository->findAllByApelido($apelido)) != $count) {
+            throw new Exception('Description count not equal to tested');
+        }
+    }
+
 }

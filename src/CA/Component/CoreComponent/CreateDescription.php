@@ -1,21 +1,19 @@
 <?php
 namespace CA\Component\CoreComponent;
 
-use CA\Component\User\City;
-use CA\Component\User\Organization;
-use CA\Component\User\User;
-use CA\Component\User\UserRepositoryInterface;
+use CA\Component\Description\Description;
+use CA\Component\Description\DescriptionRepositoryInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class CreateUser
+class CreateDescription
 {
-    const SUCCESS = 'capoeira_apelido.user.creation_success';
-    const FAILURE = 'capoeira_apelido.user.creation_failure';
+    const SUCCESS = 'capoeira_apelido.description.creation_success';
+    const FAILURE = 'capoeira_apelido.description.creation_failure';
 
     /**
-     * @var UserRepositoryInterface
+     * @var DescriptionRepositoryInterface
      */
-    private $userRepository;
+    private $descriptionRepository;
 
     /**
      * @var EventDispatcherInterface $dispatcher
@@ -23,44 +21,38 @@ class CreateUser
     private $dispatcher;
 
     /**
-     * @param UserRepositoryInterface $userRepository
+     * @param DescriptionRepositoryInterface $descriptionRepository
      * @param EventDispatcherInterface $dispatcher
      */
     function __construct(
-        UserRepositoryInterface $userRepository,
+        DescriptionRepositoryInterface $descriptionRepository,
         EventDispatcherInterface $dispatcher
     )
     {
-        $this->userRepository = $userRepository;
+        $this->descriptionRepository = $descriptionRepository;
         $this->dispatcher = $dispatcher;
     }
 
-    function __invoke(User $user)
-    {
-        $this->createUser($user);
-    }
-
-
     /**
-     * @param User $user
+     * @param Description $description
      */
-    public function createUser(User $user)
+    public function createDescription(Description $description)
     {
-        if (!$user->getName()) {
+        if (!$description->getMessage()) {
             $this->dispatcher->dispatch(self::FAILURE, new Event([
-                'user' => $user,
-                'reason'  => 'User name is empty'
+                'description' => $description,
+                'reason'  => 'Description is empty'
             ]));
 
             return;
         }
 
-        if(!$this->userRepository->findOneByEmail($user->getName()))
+        if(!$this->descriptionRepository->findOneByAuthor($description->getAuthor()))
         {
-            $this->userRepository->save($user);
-            $this->dispatcher->dispatch(self::SUCCESS, new Event(['user' => $user]));
+            $this->descriptionRepository->save($description);
+            $this->dispatcher->dispatch(self::SUCCESS, new Event(['description' => $description]));
         } else {
-            $this->dispatcher->dispatch(self::FAILURE, new Event(['user' => $user, 'reason' => 'User already exists']));
+            $this->dispatcher->dispatch(self::FAILURE, new Event(['description' => $description, 'reason' => 'Description for this user already exists']));
         }
     }
 }

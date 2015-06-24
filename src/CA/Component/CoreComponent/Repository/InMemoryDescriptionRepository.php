@@ -2,69 +2,57 @@
 namespace CA\Component\CoreComponent\Repository;
 
 use CA\Component\Apelido\Apelido;
+use CA\Component\Description\Description;
+use CA\Component\Description\DescriptionRepositoryInterface as BaseRepositoryInterface;
 use CA\Component\User\User;
-use CA\Component\User\UserRepositoryInterface as BaseRepositoryInterface;
+use Closure;
 
-class InMemoryUserRepository implements BaseRepositoryInterface
+class InMemoryDescriptionRepository implements BaseRepositoryInterface
 {
-    /**
-     * @var User[] $users
+    /**`
+     * @var Description[] $descriptions
      */
-    private $users = [];
+    private $descriptions = [];
+
+    /**
+     * @param Description $description
+     * @return mixed
+     */
+    public function save(Description $description)
+    {
+        $this->descriptions[] = $description;
+    }
+
+    /**
+     * @return Description[]
+     */
+    public function findAll()
+    {
+        return $this->descriptions;
+    }
 
     /**
      * @param User $user
-     * @return mixed
+     * @return Description|null
      */
-    public function save(User $user)
+    public function findOneByAuthor(User $user)
     {
-        $this->users[$user->getName()] = $user;
+        foreach($this->descriptions as $description) {
+            if($description->getAuthor()->getName() == $user->getName()) {
+                return $description;
+            }
+        }
     }
 
     /**
      * @param Apelido $apelido
-     * @return \Generator
+     * @return Description[]
      */
-    public function getUsersForApelido(Apelido $apelido)
-    {
-        foreach($this->users as $user) {
-            if($user->getApelido()->getName() == $apelido->getName()) {
-                yield $user;
-            }
-        }
-    }
+    public function findAllByApelido(Apelido $apelido) {
+        $callback = function(Description $description) use ($apelido) {
+            return $description->getApelido()->getName() === $apelido->getName();
+        };
 
-    /**
-     * @return User[]
-     */
-    public function findAll()
-    {
-        return $this->users;
-    }
-
-    /**
-     * @param $token
-     * @return User
-     */
-    public function getUserByToken($token)
-    {
-        foreach($this->users as $user) {
-            if($user->getToken() === $token) {
-                return $user;
-            }
-        }
-    }
-
-    /**
-     * @param $email
-     * @return User|null
-     */
-    public function findOneByEmail($email)
-    {
-        foreach($this->users as $user) {
-            if($user->getName() === $email) {
-                return $user;
-            }
-        }
+        return array_filter($this->descriptions, $callback);
     }
 }
