@@ -41,7 +41,7 @@ class CreateApelido
             return;
         }
 
-        if(!$this->repository->getApelidoByName($apelido->getName())) {
+        if(!$this->repository->findOneByName($apelido->getName())) {
             $this->repository->save($apelido);
             $this->dispatcher->dispatch(self::SUCCESS, new Event(['apelido' => $apelido]));
         }

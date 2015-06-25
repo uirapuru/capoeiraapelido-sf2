@@ -84,4 +84,16 @@ class Description {
     {
         return $this->author;
     }
+
+    public function addThumb(Thumb $thumb) {
+        if($thumb->getValue() > 0) {
+            $this->thumbsUp[] = $thumb;
+        } else {
+            $this->thumbsDown[] = $thumb;
+        }
+    }
+
+    public function getThumbsSum(){
+        return count($this->thumbsUp) - count($this->thumbsDown);
+    }
 }

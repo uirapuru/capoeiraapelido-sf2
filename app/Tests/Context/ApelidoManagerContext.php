@@ -3,6 +3,7 @@
 use Behat\Behat\Context\ContextInterface;
 use CA\Component\Description\DescriptionRepositoryInterface;
 use CA\Component\Description\Image;
+use CA\Component\Description\Thumb;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use CA\Component\CoreComponent\CreateApelido;
@@ -86,6 +87,9 @@ class ApelidoManagerContext implements ContextInterface {
         $loggedIn = new User('loggedin@tlen.pl', new Apelido('Uirapuru'), '', '', '', uniqid());
         $this->createUser->createUser($loggedIn);
 
+        $description = new Description($machadoApelido, 'message', new Image(''), $loggedIn);
+        $this->createDescription->createDescription($description);
+
         $this->loggedInUser[] = $loggedIn;
     }
 
@@ -122,11 +126,11 @@ class ApelidoManagerContext implements ContextInterface {
      */
     public function iCreateNewUser($apelidoName, $email, $organization, $city, $country)
     {
-        $apelido = $this->apelidoRepository->getApelidoByName($apelidoName);
+        $apelido = $this->apelidoRepository->findOneByName($apelidoName);
 
         if($apelido === null) {
             $this->iCreateNewApelido($apelidoName);
-            $apelido = $this->apelidoRepository->getApelidoByName($apelidoName);
+            $apelido = $this->apelidoRepository->findOneByName($apelidoName);
         }
 
         $user = new User($email, $apelido, $city, $country, $organization, uniqid());
@@ -221,7 +225,7 @@ class ApelidoManagerContext implements ContextInterface {
      */
     public function iCreateForApelidoNewDescriptionWithImage($apelidoName, $descriptionText, $imageFile, $userName)
     {
-        $apelido = $this->apelidoRepository->getApelidoByName($apelidoName);
+        $apelido = $this->apelidoRepository->findOneByName($apelidoName);
         $user = $this->userRepository->findOneByEmail($userName);
 
         $description = new Description($apelido, $descriptionText, new Image($imageFile), $user);
@@ -233,10 +237,58 @@ class ApelidoManagerContext implements ContextInterface {
      */
     public function apelidoShouldHaveDescription($apelidoName, $count)
     {
-        $apelido = $this->apelidoRepository->getApelidoByName($apelidoName);
+        $apelido = $this->apelidoRepository->findOneByName($apelidoName);
 
         if(count($this->descriptionRepository->findAllByApelido($apelido)) != $count) {
             throw new Exception('Description count not equal to tested');
+        }
+    }
+
+    /**
+     * @Given /^description for "([^"]*)" by "([^"]*)" user exists$/
+     */
+    public function descriptionForByUserExists($apelidoName, $userName)
+    {
+        $apelido = $this->apelidoRepository->findOneByName($apelidoName);
+        $user = $this->userRepository->findOneByEmail($userName);
+        $description = $this->descriptionRepository->findOneByAuthor($user);
+
+        if(!$description || $description->getApelido()->getName() !== $apelido->getName()) {
+            throw new \Exception(sprintf(
+                "Apelido %s has no description from %s",
+                $apelidoName,
+                $userName
+            ));
+        }
+    }
+
+    /**
+     * @When /^I rate '([^"]*)' description by "([^"]*)"$/
+     */
+    public function iRateDescriptionForBy($rate, $userName)
+    {
+        $user = $this->userRepository->findOneByEmail($userName);
+        $description = $this->descriptionRepository->findOneByAuthor($user);
+
+        $thumb = new Thumb(intval($rate), $this->loggedInUser[0]);
+        $description->addThumb($thumb);
+    }
+
+    /**
+     * @Then /^description by "([^"]*)" should be rated (\d+)$/
+     */
+    public function descriptionByShouldBeRated($userName, $rating)
+    {
+        $user = $this->userRepository->findOneByEmail($userName);
+        $description = $this->descriptionRepository->findOneByAuthor($user);
+
+
+        if($description->getThumbsSum() != $rating) {
+            throw new \Exception(sprintf(
+                'Rating should be %s and actually is %s',
+                $rating,
+                $description->getThumbsSum()
+            ));
         }
     }
 

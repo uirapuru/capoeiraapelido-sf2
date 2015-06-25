@@ -29,5 +29,5 @@ interface ApelidoRepositoryInterface {
      * @param string $getName
      * @return Apelido
      */
-    public function getApelidoByName($name);
+    public function findOneByName($name);
 }

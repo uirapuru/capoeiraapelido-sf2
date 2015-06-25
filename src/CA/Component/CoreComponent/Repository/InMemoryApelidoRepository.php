@@ -42,7 +42,7 @@ class InMemoryApelidoRepository implements BaseRepositoryInterface
      * @param string $getName
      * @return Apelido
      */
-    public function getApelidoByName($name)
+    public function findOneByName($name)
     {
         if(array_key_exists($name, $this->apelidos)) {
             return $this->apelidos[$name];

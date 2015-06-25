@@ -18,16 +18,10 @@ class Thumb {
      */
     protected $author;
 
-    /**
-     * @var \DateTime
-     */
-    protected $createdAt;
-
-    function __construct($value, $author, $createdAt)
+    function __construct($value, $author)
     {
         $this->value = $value;
         $this->author = $author;
-        $this->createdAt = $createdAt;
     }
 
     /**
@@ -44,13 +38,5 @@ class Thumb {
     public function getAuthor()
     {
         return $this->author;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
     }
 }
