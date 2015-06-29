@@ -11,7 +11,7 @@ interface CommentRepositoryInterface {
      * @param Apelido $apelido
      * @return Comment[]
      */
-    public function getCommentsForApelido(Apelido $apelido);
+    public function findAllByApelido(Apelido $apelido);
 
     /**
      * @param Comment $comment

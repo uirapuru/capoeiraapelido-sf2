@@ -32,12 +32,12 @@ class Description {
     /**
      * @var Thumb[]
      */
-    protected $thumbsUp;
+    protected $thumbsUp = [];
 
     /**
      * @var Thumb[]
      */
-    protected $thumbsDown;
+    protected $thumbsDown = [];
 
     /**
      * @param Apelido $apelido
@@ -86,6 +86,12 @@ class Description {
     }
 
     public function addThumb(Thumb $thumb) {
+        foreach (array_merge($this->thumbsUp, $this->thumbsDown) as $existingThumb) {
+            if($existingThumb->getAuthor()->getName() === $thumb->getAuthor()->getName()) {
+                throw new \Exception("User has already voted");
+            }
+        };
+
         if($thumb->getValue() > 0) {
             $this->thumbsUp[] = $thumb;
         } else {

@@ -24,16 +24,10 @@ class Comment {
      */
     protected $autor;
 
-    /**
-     * @var \DateTime
-     */
-    protected $createdAt;
-
-    function __construct(Apelido $apelido, $message, User $autor, \DateTime $createdAt)
+    function __construct(Apelido $apelido, $message, User $autor)
     {
         $this->apelido = $apelido;
         $this->message = $message;
-        $this->createdAt = $createdAt;
         $this->autor = $autor;
     }
 
@@ -59,13 +53,5 @@ class Comment {
     public function getAutor()
     {
         return $this->autor;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
     }
 }

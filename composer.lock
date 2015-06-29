@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "05a8a9fbc46ebcbf6f63b1d0ae7f09d2",
+    "hash": "3c106254b4af44e6914cd1984854bfaa",
     "packages": [
         {
             "name": "braincrafted/bootstrap-bundle",
@@ -65,6 +65,59 @@
                 "bootstrap"
             ],
             "time": "2015-03-06 12:14:13"
+        },
+        {
+            "name": "components/underscore",
+            "version": "1.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/components/underscore.git",
+                "reference": "dc64d58f5d1079e5822d480110b28d724bda06c2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/components/underscore/zipball/dc64d58f5d1079e5822d480110b28d724bda06c2",
+                "reference": "dc64d58f5d1079e5822d480110b28d724bda06c2",
+                "shasum": ""
+            },
+            "require": {
+                "robloach/component-installer": "*"
+            },
+            "type": "component",
+            "extra": {
+                "component": {
+                    "scripts": [
+                        "underscore.js"
+                    ],
+                    "files": [
+                        "underscore-min.js",
+                        "underscore-min.map"
+                    ],
+                    "shim": {
+                        "exports": "_"
+                    }
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jeremy Ashkenas",
+                    "email": "jeremy@documentcloud.org"
+                }
+            ],
+            "description": "JavaScript's functional programming helper library.",
+            "homepage": "http://underscorejs.org",
+            "keywords": [
+                "browser",
+                "client",
+                "functional",
+                "server",
+                "util"
+            ],
+            "time": "2014-09-22 16:48:28"
         },
         {
             "name": "doctrine/annotations",
@@ -1468,6 +1521,54 @@
             "time": "2012-12-21 11:40:51"
         },
         {
+            "name": "robloach/component-installer",
+            "version": "0.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/RobLoach/component-installer.git",
+                "reference": "6f654095da6e364261093c2d9ca416e1027d0169"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/RobLoach/component-installer/zipball/6f654095da6e364261093c2d9ca416e1027d0169",
+                "reference": "6f654095da6e364261093c2d9ca416e1027d0169",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.0",
+                "kriswallsmith/assetic": "1.*",
+                "php": ">=5.3.2"
+            },
+            "require-dev": {
+                "composer/composer": "1.*@alpha",
+                "phpunit/phpunit": "4.*"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                },
+                "class": "ComponentInstaller\\ComponentInstallerPlugin"
+            },
+            "autoload": {
+                "psr-0": {
+                    "ComponentInstaller": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Rob Loach",
+                    "homepage": "http://robloach.net"
+                }
+            ],
+            "description": "Allows installation of Components via Composer.",
+            "time": "2015-06-18 13:02:30"
+        },
+        {
             "name": "sensio/distribution-bundle",
             "version": "v3.0.30",
             "target-dir": "Sensio/Bundle/DistributionBundle",
@@ -2423,7 +2524,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/phpspec/zipball/73b9b30b5b52736f722737de8678385688eb3409",
+                "url": "https://api.github.com/repos/phpspec/phpspec/zipball/36c1e97d59630888fd022a542b1650ae5eab1f18",
                 "reference": "73b9b30b5b52736f722737de8678385688eb3409",
                 "shasum": ""
             },
@@ -2807,7 +2908,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/cf89d17c2ee4423cfe0baa657ede1af455dc1c15",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/7194ed34915e4a334cd04682bd0f16035bf9df91",
                 "reference": "cf89d17c2ee4423cfe0baa657ede1af455dc1c15",
                 "shasum": ""
             },

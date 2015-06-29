@@ -13,14 +13,14 @@ Feature: Existing user can add his description to apelido
     Then I should be notified about failure on description creation
     And apelido "Machado" should have 1 description
 
-  Scenario: Successfully rating description
+  Scenario: Rating description
     Given I am logged in as "loggedin@tlen.pl"
     And apelido "Machado" does exist
     And user account "rating@tlen.pl" has been created
     And description for "Machado" by "loggedin@tlen.pl" user exists
-    When I rate '1' description by "loggedin@tlen.pl"
+    When 'user1@tlen.pl' rates '1' description by "loggedin@tlen.pl"
     Then description by "loggedin@tlen.pl" should be rated 1
-    When I rate '1' description by "loggedin@tlen.pl"
-    Then description by "loggedin@tlen.pl" should be rated 2
-    When I rate '-1' description by "loggedin@tlen.pl"
+    When 'user1@tlen.pl' rates '1' description by "loggedin@tlen.pl"
     Then description by "loggedin@tlen.pl" should be rated 1
+    When 'user2@tlen.pl' rates '-1' description by "loggedin@tlen.pl"
+    Then description by "loggedin@tlen.pl" should be rated 0

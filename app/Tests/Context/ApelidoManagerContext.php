@@ -1,6 +1,10 @@
 <?php
 
 use Behat\Behat\Context\ContextInterface;
+use CA\Component\Comment\Comment;
+use CA\Component\Comment\CommentRepositoryInterface;
+use CA\Component\CoreComponent\CreateComment;
+use CA\Component\CoreComponent\Repository\InMemoryCommentRepository;
 use CA\Component\Description\DescriptionRepositoryInterface;
 use CA\Component\Description\Image;
 use CA\Component\Description\Thumb;
@@ -41,6 +45,10 @@ class ApelidoManagerContext implements ContextInterface {
     private $userRepository;
 
     /**
+     * @var CommentRepositoryInterface
+     */
+    private $commentRepository;
+    /**
      * @var DescriptionRepositoryInterface|InMemoryDescriptionRepository
      */
     private $descriptionRepository;
@@ -61,6 +69,12 @@ class ApelidoManagerContext implements ContextInterface {
     private $createDescription;
 
     /**
+     * @var CreateComment $createComment
+     */
+    private $createComment;
+
+
+    /**
      * @BeforeScenario
      */
     public function prepare()
@@ -72,14 +86,18 @@ class ApelidoManagerContext implements ContextInterface {
         $dispatcher->addListener(CreateUser::FAILURE, [$this, 'recordNotification']);
         $dispatcher->addListener(CreateDescription::SUCCESS, [$this, 'recordNotification']);
         $dispatcher->addListener(CreateDescription::FAILURE, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateComment::SUCCESS, [$this, 'recordNotification']);
+        $dispatcher->addListener(CreateComment::FAILURE, [$this, 'recordNotification']);
 
         $this->apelidoRepository = new InMemoryApelidoRepository();
         $this->userRepository = new InMemoryUserRepository();
         $this->descriptionRepository = new InMemoryDescriptionRepository();
+        $this->commentRepository = new InMemoryCommentRepository();
 
         $this->createApelido = new CreateApelido($this->apelidoRepository, $dispatcher);
         $this->createUser = new CreateUser($this->userRepository, $dispatcher);
         $this->createDescription = new CreateDescription($this->descriptionRepository, $dispatcher);
+        $this->createComment = new CreateComment($this->commentRepository, $dispatcher);
 
         $machadoApelido = new Apelido("Machado");
         $this->apelidoRepository->save($machadoApelido);
@@ -89,6 +107,9 @@ class ApelidoManagerContext implements ContextInterface {
 
         $description = new Description($machadoApelido, 'message', new Image(''), $loggedIn);
         $this->createDescription->createDescription($description);
+
+        $comment = new Comment($machadoApelido, 'first message', $loggedIn);
+        $this->createComment->createComment($comment);
 
         $this->loggedInUser[] = $loggedIn;
     }
@@ -263,15 +284,20 @@ class ApelidoManagerContext implements ContextInterface {
     }
 
     /**
-     * @When /^I rate '([^"]*)' description by "([^"]*)"$/
+     * @When /^\'([^\']*)\' rates \'([^\']*)\' description by "([^"]*)"$/
      */
-    public function iRateDescriptionForBy($rate, $userName)
+    public function userRatesDescriptionForBy($author, $rate, $userName)
     {
         $user = $this->userRepository->findOneByEmail($userName);
         $description = $this->descriptionRepository->findOneByAuthor($user);
 
-        $thumb = new Thumb(intval($rate), $this->loggedInUser[0]);
-        $description->addThumb($thumb);
+        $thumb = new Thumb(intval($rate), new User($author, new Apelido(null), null. null, null, null, null));
+
+        try {
+            $description->addThumb($thumb);
+        } catch(Exception $e) {
+            ;
+        }
     }
 
     /**
@@ -282,7 +308,6 @@ class ApelidoManagerContext implements ContextInterface {
         $user = $this->userRepository->findOneByEmail($userName);
         $description = $this->descriptionRepository->findOneByAuthor($user);
 
-
         if($description->getThumbsSum() != $rating) {
             throw new \Exception(sprintf(
                 'Rating should be %s and actually is %s',
@@ -292,4 +317,32 @@ class ApelidoManagerContext implements ContextInterface {
         }
     }
 
+    /**
+     * @When /^I create for apelido "([^"]*)" new comment "([^"]*)" as user "([^"]*)"$/
+     */
+    public function iCreateForApelidoNewCommentAsUser($apelidoName, $commentName, $userEmail)
+    {
+        $apelido = $this->apelidoRepository->findOneByName($apelidoName);
+        $comment = new Comment($apelido, $commentName, new User($userEmail, $apelido, null, null, null, null));
+        $this->createComment->createComment($comment);
+    }
+
+    /**
+     * @Given /^apelido "([^"]*)" should have (\d+) comment$/
+     */
+    public function apelidoShouldHaveComment($apelidoName, $countComments)
+    {
+        $apelido = $this->apelidoRepository->findOneByName($apelidoName);
+
+        $count = count($this->commentRepository->findAllByApelido($apelido));
+
+        if($count != intval($countComments)) {
+            throw new \Exception(sprintf(
+                'There should be %d comments, found %d',
+                $countComments,
+                $count
+            ));
+        }
+
+    }
 }

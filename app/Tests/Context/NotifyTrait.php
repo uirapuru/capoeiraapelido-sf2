@@ -1,6 +1,7 @@
 <?php
 
 use CA\Component\CoreComponent\CreateApelido;
+use CA\Component\CoreComponent\CreateComment;
 use CA\Component\CoreComponent\CreateDescription;
 use CA\Component\CoreComponent\CreateUser;
 use CA\Component\CoreComponent\Event;
@@ -77,6 +78,16 @@ trait NotifyTrait {
     {
         if (!in_array(CreateDescription::FAILURE, $this->notifications)) {
             throw new RuntimeException('Notification not received!');
+        };
+    }
+
+    /**
+     * @Then /^I should be notified about successful comment creation$/
+     */
+    public function iShouldBeNotifiedAboutSuccessfulCommentCreation()
+    {
+        if (!in_array(CreateComment::SUCCESS, $this->notifications)) {
+            throw new RuntimeException('No notification received');
         };
     }
 }
